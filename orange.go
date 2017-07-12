@@ -7,15 +7,19 @@ import (
 	"sync"
 )
 
-const (
-	appConfig = "application.yaml"
+const(
+	defaultAppName = "Orange"
+	defaultConfig     = "application.yaml"
+	defaultConfigPath = "config"
 )
-
 type HandlerFunc func(ctx *Context)
+type config *viper.Viper
 type App struct {
+	Name string
 	*Namespace
 	rootDir string
-	Config  *Config
+	Config  *config
+	ConfigPath string
 	router  *httprouter.Router
 	render  Render
 	pool    sync.Pool
@@ -24,17 +28,10 @@ type App struct {
 func New() *App {
 	var app *App
 	app = new(App)
+	app.Name = defaultAppName
+	app.ConfigPath = defaultConfigPath
 	app.defaultPool()
 	app.newRouter()
-	app.loadConfig(configPath)
-	return app
-}
-
-func AddConfigPath(configPath string) *App {
-	if configPath == "" {
-		configPath = filepath.Join(app.rootDir, appConfig)
-	}
-	app.loadConfig(configPath)
 	return app
 }
 
@@ -51,7 +48,22 @@ func (app *App) Use(middlewares ...HandleFunc) {
 }
 
 func (app *App) loadConfig(path string) {
-
+	var config *config
+	replacer := strings.NewReplacer(".", "_")
+	config = viper.New()
+	config.SetEnvKeyReplacer(replacer)
+	config.SetEnvPrefix(prefix)
+	config.AutomaticEnv()
+	config.SetConfigName(name)
+	config.AddConfigPath(path)
+	config.SetConfigType(filetype)
+	err := config.ReadInConfig()
+	if err != nil {
+	}
+	config.WatchConfig()
+	config.OnConfigChange(func(e fsnotify.Event) {
+	})
+	app.Config = config
 }
 
 func (app *App) defaultPool() {
