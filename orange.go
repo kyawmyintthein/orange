@@ -7,12 +7,13 @@ import (
 	"sync"
 )
 
-
+var bufPool = pool.NewBufferPool(100)
 type HandlerFunc func(ctx *Context)
 type config *viper.Viper
 type App struct {
 	*Namespace
 	rootDir string
+	res
 	router  *httprouter.Router
 	render  Render
 	pool    sync.Pool
