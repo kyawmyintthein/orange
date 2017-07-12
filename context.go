@@ -90,8 +90,19 @@ func (ctx *context) ResponseJSON(status int, data interface{}) {
 }
 
 //Param get param from route
-func (ctx *context) Param(name string, v interface{}){
-	val := c.params.ByName(name)
-
+func (ctx *context) Param(name string) string{
+	return c.params.ByName(name)
 }
 
+
+func (ctx *context) Params() map[string]interface{}{
+	var params = make(map[string]interface{})
+	for _, param := range c.params{
+		params[param.Key] = param.Value
+	}
+	return params
+}
+
+func (ctx *context) QueryParam(name string) string{
+	return ctx.request.URL.Query().Get(name)
+}
