@@ -10,7 +10,7 @@ type Router struct {
 	absolutePath string
 }
 
-func (ns *Router) Use(middlewares ...HandlerFunc) {
+func (r *Router) Use(middlewares ...HandlerFunc) {
 	c.handlerFuncs = append(c.handlerFuncs, middlewares...)
 }
 
