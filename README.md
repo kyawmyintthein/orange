@@ -1,7 +1,12 @@
 # Orange
-## RESTful lightweight framework
+### RESTful lightweight framework
 
-https://github.com/julienschmidt/httprouter based framework for Restapi only. <strong> org-cli <strong> is tool to manage <i> Orange <i> projects and generate project skeleton.
+**Orange** is  a [httprouter](https://github.com/julienschmidt/httprouter) based framework for api only. <strong> Org-cli </strong> is a tool to manage  *Orange*  projects and to generate project skeleton.
 
 
+**Features**
+ - Lightweight fraemwork
+ - RESTful only
+ - Middleware
+ - Filters
 
