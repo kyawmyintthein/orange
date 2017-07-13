@@ -11,7 +11,7 @@ type Router struct {
 }
 
 func (r *Router) Use(middlewares ...HandlerFunc) {
-	c.handlerFuncs = append(c.handlerFuncs, middlewares...)
+	r.handlerFuncs = append(r.handlerFuncs, middlewares...)
 }
 
 //GET handle GET method
@@ -50,7 +50,7 @@ func (r *Router) OPTIONS(path string, handlers ...HandlerFunc) {
 }
 
 //Group group route
-func (r *Router) Namespace(path string, handlers ...HandlerFunc) *Router {
+func (r *Router) Controller(path string, handlers ...HandlerFunc, middlewares ...HandleFunc) *Router {
 	handlers = r.mergeHandlers(handlers)
 	return &Router{
 		handlerFuncs: handlers,

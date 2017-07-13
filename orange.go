@@ -19,7 +19,7 @@ var bufPool = pool.NewBufferPool(100)
 type HandlerFunc func(ctx *Context)
 type config *viper.Viper
 type App struct {
-	*Router
+	router *Router
 	router *httprouter.Router
 	pool   sync.Pool
 }
@@ -119,14 +119,30 @@ func (app *App) ServceHttp(res http.ResponseWriter, req *http.Request) {
 // Start: start http server
 func (app *App) Start(addr stirng) {
 	ColorLog("[INFO] server start at: %s\n", addr)
-	if err := http.ListenAndServe(addr, app); err != nil {
+	if err := http.ListenAndServe(addr, app.router); err != nil {
 		panic(err)
 	}
 }
 
 // Start lts (https) server
 func (app *App) StartTLS(addr string, cert string, key string) {
-	if err := http.ListenAndServeTLS(addr, cert, key, app); err != nil {
+	if err := http.ListenAndServeTLS(addr, cert, key, app.router); err != nil {
 		panic(err)
 	}
+}
+
+func (app *App) Namespace(path string, handlers ...HandleFunc, middlewares ...HandleFunc) *Router {
+	handlers = app.router.mergeHandlers(handlers)
+	router := Router{
+		handlerFuncs: handlers,
+		name:         r.path(path),
+		app:          r.app,
+	}
+
+	router.Use(middlewares)
+	return &router
+}
+
+func (app *App) Use(middlewares ...HandleFunc) {
+	app.router.handlerFuncs = append(r.handlerFuncs, middlewares)
 }

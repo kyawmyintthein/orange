@@ -4,6 +4,7 @@ func main() {
 
 	app = NewApp()
 	app.Use(middleware1, middleware2)
+
 	userController = app.Controller("/user")
 	userController.Use(middleware1, middleware2)
 
