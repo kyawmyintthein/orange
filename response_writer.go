@@ -2,7 +2,11 @@ package orange
 
 import (
 	"net/http"
+	"net"
+	"bufio"
+	"errors"
 )
+
 const notWritten = -1
 
 type ResponseWriter interface {
@@ -34,13 +38,13 @@ func (res *Response) Written() bool {
 	return res.size != notWritten
 }
 
-func (res *Response) WriteHeader() {
-	if !res.Written() {
-		res.size = 0
-		res.callBefore()
-		res.ResponseWriter.WriteHeader(res.status)
-	}
-}
+// func (res *Response) WriteHeader() {
+// 	if !res.Written() {
+// 		res.size = 0
+// 		res.callBefore()
+// 		res.ResponseWriter.WriteHeader(res.status)
+// 	}
+// }
 
 func (res *Response) Before(before func(ResponseWriter)) {
 	res.beforeFuncs = append(res.beforeFuncs, before)
@@ -73,7 +77,7 @@ func (res *Response) Flush() {
 
 func (res *Response) callBefore() {
 	for i := len(res.beforeFuncs) - 1; i >= 0; i-- {
-		res.beforeFuncs[i](c)
+		res.beforeFuncs[i](res)
 	}
 }
 

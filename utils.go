@@ -1,13 +1,18 @@
 package orange
 
-type HttpError struct{
-	Status  int
-	Message interface{}
+import(
+	"fmt"
+	"net/http"
+)
+
+type HttpError struct {
+	Status  int   `json:"status"`
+	Message interface{} `json:"message"`
 }
 
 // NewHttpError: create http error object
-func NewHttpError(code int, message ...interface{}) *HttpError {
-	httpError := &HttpError{Code: code, Message: http.StatusText(code)}
+func NewHttpError(status int, message ...interface{}) *HttpError {
+	httpError := &HttpError{Status: status, Message: http.StatusText(status)}
 	if len(message) > 0 {
 		httpError.Message = message[0]
 	}
@@ -16,7 +21,7 @@ func NewHttpError(code int, message ...interface{}) *HttpError {
 
 // HttpError as string
 func (httpError *HttpError) Error() string {
-	return fmt.Sprintf("code=%d, message=%v", he.Code, he.Message)
+	return fmt.Sprintf("status=%d, message=%v", httpError.Status, httpError.Message)
 }
 
 func concat(s ...string) string {

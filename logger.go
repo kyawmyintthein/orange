@@ -1,9 +1,31 @@
 package orange
 
+import "fmt"
+import "runtime"
+import "strings"
+import "time"
+
+const (
+	Gray = uint8(iota + 90)
+	Red
+	Green
+	Yellow
+	Blue
+	Magenta
+	//NRed      = uint8(31) // Normal
+	EndColor = "\033[0m"
+
+	INFO = "INFO"
+	TRAC = "TRAC"
+	ERRO = "ERRO"
+	WARN = "WARN"
+	SUCC = "SUCC"
+)
+
 // ColorLog colors log and print to stdout.
 // See color rules in function 'ColorLogS'.
 func colorLog(format string, a ...interface{}) {
-	fmt.Print(ColorLogS(format, a...))
+	fmt.Print(colorLogS(format, a...))
 }
 
 // ColorLogS colors log and return colored content.
