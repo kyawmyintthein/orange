@@ -1,6 +1,6 @@
 package orange
 
-type HttpError struct{
+type HttpError struct {
 	Status  int
 	Message interface{}
 }

@@ -4,17 +4,15 @@ import "github.com/julienschmidt/httprouter"
 import "net/http"
 
 type Router struct {
-	app *App
-	handlerFuncs     []HandlerFunc
-	name        string
+	app          *App
+	handlerFuncs []HandlerFunc
+	name         string
 	absolutePath string
 }
-
 
 func (ns *Router) Use(middlewares ...HandlerFunc) {
 	c.handlerFuncs = append(c.handlerFuncs, middlewares...)
 }
-
 
 //GET handle GET method
 func (r *Router) GET(path string, handlers ...HandlerFunc) {
@@ -56,8 +54,8 @@ func (r *Router) Namespace(path string, handlers ...HandlerFunc) *Router {
 	handlers = r.mergeHandlers(handlers)
 	return &Router{
 		handlerFuncs: handlers,
-		name:     r.path(path),
-		app:      r.app,
+		name:         r.path(path),
+		app:          r.app,
 	}
 }
 
