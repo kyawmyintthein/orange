@@ -2,7 +2,6 @@ package orange
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"math"
 	"mime/multipart"
@@ -12,24 +11,9 @@ import (
 	"strings"
 )
 
-type ContentType string
-type Charset string
-
-const (
-	contentType    = "Content-Type"
-	acceptLanguage = "Accept-Language"
+const(
 	abortIndex     = math.MaxInt8 / 2
-	httpProtocol   = "http"
-	httpsProtocol  = "https"
 	defaultMemory  = 32 << 20 // 32 MB
-)
-
-const (
-	ContentTypeJSON ContentType = "applicaiton/json"
-)
-
-const (
-	charsetUTF8 string = "UIF-8"
 )
 
 type Context struct {
@@ -58,7 +42,7 @@ func (ctx *Context) Response() *Response {
 // Scheme: return http protocol schame as string
 func (ctx *Context) Scheme() string {
 	if ctx.IsTLS() {
-		return httpsProtocol
+		return ProtocolHttps
 	}
 	if scheme := ctx.request.Header.Get(HeaderXForwardedProto); scheme != "" {
 		return scheme
@@ -96,31 +80,39 @@ func (ctx *Context) Path() string {
 	return ctx.path
 }
 
-// ResponseJSON: response json to client
-func (ctx *Context) ResponseJSON(status int, data interface{}) {
-	ctx.response.Header().Set(contentType, fmt.Sprintf("%s; charset=%s", ContentTypeJSON, charsetUTF8))
+// JSON: response json to client
+func (ctx *Context) JSON(status int, data interface{}) {
+	var err error
+	ctx.response.Header().Set(HeaderContentType, MIMETypeApplicationJSONCharsetUTF8)
 	ctx.response.WriteHeader(status)
 	if data == nil {
 		return
 	}
-	b, _ := json.Marshal(data)
-	ctx.response.Write([]byte(b))
+	buf := bufPool.Get()
+	defer bufPool.Put(buf)
+	if err = json.NewEncoder(buf).Encode(data); err != nil{
+		colorLog("[WARN] " + err.Error())
+	}
+	ctx.response.Write(buf.Bytes())
 }
 
-// ResponseJSONP: response jsonp to client
-func (ctx *Context) ResponseJSONP(status int, callback string, data interface{}) {
-	ctx.response.Header().Set(contentType, fmt.Sprintf("%s; charset=%s", ContentTypeJSON, charsetUTF8))
+// JSONP: response jsonp to client
+func (ctx *Context) JSONP(status int, callback string, data interface{}) {
+	ctx.response.Header().Set(HeaderContentType, MIMETypeApplicationJSONCharsetUTF8)
 	ctx.response.WriteHeader(status)
 	if data == nil {
-		return
+		return 
 	}
-	datab, _ := json.Marshal(data)
-	b := []byte(callback + "(" + string(datab) + ")")
+	buf := bufPool.Get()
+	defer bufPool.Put(buf)
+	_ = json.NewEncoder(buf).Encode(data)
+	b := []byte(callback + "(" + string(buf.Bytes()) + ")")
 	ctx.response.Write(b)
 }
 
-func (ctx *Context) ResponseBytes(status int, contentType string, data []byte) {
-	ctx.response.Header().Set(HeaderContentType, contentType)
+// Bytes 
+func (ctx *Context) Bytes(status int, contentType string, data []byte) {
+	ctx.response.Header().Set(HeaderContentType, MIMETypeApplicationJSONCharsetUTF8)
 	ctx.response.WriteHeader(status)
 	ctx.response.Write(data)
 }
@@ -162,7 +154,7 @@ func (ctx *Context) FormValue(name string) string {
 // FormData: return form values
 func (ctx *Context) FormData() (url.Values, error) {
 	var err error
-	if strings.HasPrefix(ctx.request.Header.Get(HeaderContentType), MIMEMultipartForm) {
+	if strings.HasPrefix(ctx.request.Header.Get(HeaderContentType), MIMETypeMultipartForm) {
 		if err = ctx.request.ParseMultipartForm(defaultMemory); err != nil {
 			return nil, err
 		}

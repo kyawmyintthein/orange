@@ -38,22 +38,19 @@ func (res *Response) Written() bool {
 	return res.size != notWritten
 }
 
-// func (res *Response) WriteHeader() {
-// 	if !res.Written() {
-// 		res.size = 0
-// 		res.callBefore()
-// 		res.ResponseWriter.WriteHeader(res.status)
-// 	}
-// }
-
 func (res *Response) Before(before func(ResponseWriter)) {
 	res.beforeFuncs = append(res.beforeFuncs, before)
 }
 
+// WriteHeader: implement http.Handler function write header
 func (res *Response) WriteHeader(code int) {
-	if code > 0 {
-		res.status = code
+	if res.Written() {
+		colorLog("[WARN] Headers were already written!")
 	}
+	res.size = 0
+	res.status = code
+	res.callBefore()
+	res.ResponseWriter.WriteHeader(res.status)
 }
 
 func (res *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {

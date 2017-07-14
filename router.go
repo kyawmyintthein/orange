@@ -81,7 +81,7 @@ func (r *Router) path(p string) string {
 	if r.prefix == "/" {
 		return p
 	}
-	return concat(r.prefix, p)
+	return stringConcat(r.prefix, p)
 }
 
 func (r *Router) mergeHandlers(handlers []HandlerFunc) []HandlerFunc {

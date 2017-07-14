@@ -1,30 +1,10 @@
 package orange
 
-import(
-	"fmt"
-	"net/http"
-)
+import "bytes"
+import "sync"
 
-type HttpError struct {
-	Status  int   `json:"status"`
-	Message interface{} `json:"message"`
-}
-
-// NewHttpError: create http error object
-func NewHttpError(status int, message ...interface{}) *HttpError {
-	httpError := &HttpError{Status: status, Message: http.StatusText(status)}
-	if len(message) > 0 {
-		httpError.Message = message[0]
-	}
-	return httpError
-}
-
-// HttpError as string
-func (httpError *HttpError) Error() string {
-	return fmt.Sprintf("status=%d, message=%v", httpError.Status, httpError.Message)
-}
-
-func concat(s ...string) string {
+// string concat
+func stringConcat(s ...string) string {
 	size := 0
 	for i := 0; i < len(s); i++ {
 		size += len(s[i])
@@ -37,4 +17,29 @@ func concat(s ...string) string {
 	}
 
 	return string(buf)
+}
+
+// Buffer pool
+type BufferPool struct{
+	pool sync.Pool
+}
+
+// NewBufferPool: create new buffer pool
+func newBufferPool(size int) *BufferPool {
+	var bp BufferPool
+	bp.pool.New = func() interface{} {
+		return new(bytes.Buffer)
+	}
+	return &bp
+}
+
+// Get: get buffer from pool
+func (bp *BufferPool) Get() *bytes.Buffer {
+	return bp.pool.Get().(*bytes.Buffer)
+}
+
+// Get: put back buffer to pool
+func (bp *BufferPool) Put(b *bytes.Buffer) {
+	b.Reset()
+	bp.pool.Put(b)
 }
