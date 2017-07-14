@@ -5,15 +5,34 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"sync"
+	"os"
+	"runtime"
+	"path/filepath"
 )
 
+const(
+	ConfigFilename = "application"
+	ConfigFiletype = "yaml"
+)
+
+const(
+	ConfigKeyApp = "app"
+	ConfigkeyAppName = ConfigKeyApp + ".name"
+	ConfigKeyAppEnv  = ConfigKeyApp + ".env"
+	ConfigKeyAppEnvs = ConfigKeyApp + ".envs"
+)
 // buffer pool
 var bufPool = newBufferPool(100)
 
 type App struct {
 	name       string
+	version    string
+	rootDir    string
+	env        string
+	envs       []string
 	router     *Router
 	httprouter *httprouter.Router
+	config     *Config      
 	pool       sync.Pool
 }
 
@@ -23,10 +42,73 @@ type HandlerFunc func(ctx *Context)
 func NewApp(name string) *App {
 	var app *App
 	app = new(App)
+
+
+	// get caller 
+	 _, file, _, _ := runtime.Caller(1)
+	fpath := filepath.FromSlash(file)
+	dir, file := filepath.Split(fpath)
+
 	app.name = name
+	app.rootDir = dir
 	app.defaultPool()
 	app.newRouter()
+	app.loadConfig()
+	app.defaultConfig()
 	return app
+}
+
+// NewConfig: 
+func (app *App) NewConfig(filename, path, filetype string) (*Config, error){
+	var(
+		config *Config
+		err     error
+	)
+	config = new(Config)
+	config.filetype = filetype
+	config.filename = filename
+	if path == ""{
+	 	_, fpath, _, _ := runtime.Caller(1)
+		config.path = fpath
+	}
+	config.app = app
+	config.replacer = defaultReplacer
+	err = config.load()
+	return config, err
+}
+
+func (app *App) Config(filename, path, filetype string) error{
+	var err error
+	app.config = new(Config)
+	app.config.filetype = filetype
+	app.config.filename = filename
+	app.config.path = path
+	err = app.config.load()
+	return err
+}
+
+// defaultConfig 
+func (app *App) defaultConfig(){
+	app.envs = app.config.GetStringSlice(ConfigKeyAppEnvs)
+	app.env = app.config.GetString(ConfigKeyAppEnv)
+	app.name = app.config.GetString(ConfigkeyAppName)
+}
+
+// loadConfig 
+func (app *App) loadConfig(){
+	var (
+		config 	  *Config
+		err       error
+	)
+	config = new(Config)
+	config.filename = ConfigFilename
+	config.filetype = ConfigFiletype
+	config.path = app.rootDir
+	if err = config.load(); err != nil{
+		colorLog("[ERRO] unable to find the default config file under " + app.rootDir + ".\n")
+		os.Exit(1)
+	}
+	app.config = config
 }
 
 // defaultPool: load default pool
@@ -129,4 +211,19 @@ func (app *App) Use(middlewares ...HandlerFunc) {
 	app.router.handlerFuncs = append(app.router.handlerFuncs, middlewares...)
 }
 
+// AppConfig: load config
+func (app *App) AppConfig() *Config{
+	return app.config
+}
+
+
+// AppConfig: load config
+func (app *App) ENV() string{
+	return app.env
+}
+
+// Version: get version
+func (app *App) Version() string{
+	return app.version
+}
 
