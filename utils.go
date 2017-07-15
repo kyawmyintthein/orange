@@ -3,6 +3,11 @@ package orange
 import "bytes"
 import "sync"
 
+// Buffer pool
+type BufferPool struct{
+	pool sync.Pool
+}
+
 // string concat
 func stringConcat(s ...string) string {
 	size := 0
@@ -17,11 +22,6 @@ func stringConcat(s ...string) string {
 	}
 
 	return string(buf)
-}
-
-// Buffer pool
-type BufferPool struct{
-	pool sync.Pool
 }
 
 // NewBufferPool: create new buffer pool

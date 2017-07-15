@@ -10,17 +10,20 @@ import (
 	"path/filepath"
 )
 
+// App Config default filename
 const(
 	ConfigFilename = "application"
 	ConfigFiletype = "yaml"
 )
 
+// App Config default const
 const(
 	ConfigKeyApp = "app"
 	ConfigkeyAppName = ConfigKeyApp + ".name"
 	ConfigKeyAppEnv  = ConfigKeyApp + ".env"
 	ConfigKeyAppEnvs = ConfigKeyApp + ".envs"
 )
+
 // buffer pool
 var bufPool = newBufferPool(100)
 
@@ -38,7 +41,7 @@ type App struct {
 
 type HandlerFunc func(ctx *Context)
 
-// New: init new app object
+// NewApp: init new app object
 func NewApp(name string) *App {
 	var app *App
 	app = new(App)
@@ -77,6 +80,7 @@ func (app *App) NewConfig(filename, path, filetype string) (*Config, error){
 	return config, err
 }
 
+// Config: set custom app config
 func (app *App) Config(filename, path, filetype string) error{
 	var err error
 	app.config = new(Config)

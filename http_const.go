@@ -74,6 +74,7 @@ const (
 	HeaderXCSRFToken              = "X-CSRF-Token"
 )
 
+// Protocol
 const (
 	ProtocolHttp   = "http"
 	ProtocolHttps  = "https"

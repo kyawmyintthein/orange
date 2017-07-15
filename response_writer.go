@@ -8,7 +8,6 @@ import (
 )
 
 const notWritten = -1
-
 type ResponseWriter interface {
 	Status() int
 	Size() int
@@ -26,18 +25,23 @@ type Response struct {
 	app         *App
 }
 
+
+// Status: return response status
 func (res *Response) Status() int {
 	return res.status
 }
 
+// Size: return response size
 func (res *Response) Size() int {
 	return res.size
 }
 
+// Written: return response is written
 func (res *Response) Written() bool {
 	return res.size != notWritten
 }
 
+// Before: Before allows for a function to be called before the ResponseWriter has been written.
 func (res *Response) Before(before func(ResponseWriter)) {
 	res.beforeFuncs = append(res.beforeFuncs, before)
 }
@@ -53,6 +57,7 @@ func (res *Response) WriteHeader(code int) {
 	res.ResponseWriter.WriteHeader(res.status)
 }
 
+// Hijack:
 func (res *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := res.ResponseWriter.(http.Hijacker)
 	if !ok {
@@ -61,9 +66,9 @@ func (res *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return hijacker.Hijack()
 }
 
-func (res *Response) CloseNotify() <-chan bool {
-	return res.ResponseWriter.(http.CloseNotifier).CloseNotify()
-}
+// func (res *Response) CloseNotify() <-chan bool {
+// 	return res.ResponseWriter.(http.CloseNotifier).CloseNotify()
+// }
 
 func (res *Response) Flush() {
 	flusher, ok := res.ResponseWriter.(http.Flusher)
@@ -72,12 +77,14 @@ func (res *Response) Flush() {
 	}
 }
 
+// callBefore: call middlewares before written.
 func (res *Response) callBefore() {
 	for i := len(res.beforeFuncs) - 1; i >= 0; i-- {
 		res.beforeFuncs[i](res)
 	}
 }
 
+// reset: reset response writer
 func (res *Response) reset(writer http.ResponseWriter) {
 	res.ResponseWriter = writer
 	res.status = http.StatusOK

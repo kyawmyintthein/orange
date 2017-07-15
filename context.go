@@ -166,24 +166,29 @@ func (ctx *Context) FormData() (url.Values, error) {
 	return ctx.request.Form, nil
 }
 
+// File: return multipart.FileHeader, error from request
 func (ctx *Context) File(name string) (*multipart.FileHeader, error) {
 	_, fileheader, err := ctx.request.FormFile(name)
 	return fileheader, err
 }
 
+// MultipartFrom: return multipart.Form and error from request
 func (ctx *Context) MultipartForm() (*multipart.Form, error) {
 	err := ctx.request.ParseMultipartForm(defaultMemory)
 	return ctx.request.MultipartForm, err
 }
 
+// Cookie: return cookie via name from request header
 func (ctx *Context) Cookie(name string) (*http.Cookie, error) {
 	return ctx.request.Cookie(name)
 }
 
+// Cookies: return all cookies from request header
 func (ctx *Context) Cookies() []*http.Cookie {
 	return ctx.request.Cookies()
 }
 
+// App: return app
 func (ctx *Context) App() *App {
 	return ctx.app
 }
