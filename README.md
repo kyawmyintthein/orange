@@ -53,3 +53,12 @@
       version: 1.0.0
       dev: 
         address: localhost:3000
+
+**Contributing**
+
+ -  Use issues and PR for changes
+ -  Open issues for feature request 
+
+**What need to be done?**
+
+ - Write test case
