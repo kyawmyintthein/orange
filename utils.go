@@ -1,11 +1,10 @@
 package orange
 
 import "bytes"
-import "sync"
 
 // Buffer pool
 type BufferPool struct{
-	pool sync.Pool
+	buffer chan *bytes.Buffer
 }
 
 // string concat
@@ -26,20 +25,26 @@ func stringConcat(s ...string) string {
 
 // NewBufferPool: create new buffer pool
 func newBufferPool(size int) *BufferPool {
-	var bp BufferPool
-	bp.pool.New = func() interface{} {
-		return new(bytes.Buffer)
+	return &BufferPool{
+		buffer: make(chan *bytes.Buffer, size),
 	}
-	return &bp
 }
 
 // Get: get buffer from pool
-func (bp *BufferPool) Get() *bytes.Buffer {
-	return bp.pool.Get().(*bytes.Buffer)
+func (bp *BufferPool) Get() (b *bytes.Buffer) {
+	select {
+	case b = <-bp.buffer:
+	default:
+		b = bytes.NewBuffer([]byte{})
+	}
+	return
 }
 
 // Get: put back buffer to pool
 func (bp *BufferPool) Put(b *bytes.Buffer) {
 	b.Reset()
-	bp.pool.Put(b)
+	select {
+	case bp.c <- b:
+	default: 
+	}
 }
