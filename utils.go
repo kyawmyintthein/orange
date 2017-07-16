@@ -44,7 +44,7 @@ func (bp *BufferPool) Get() (b *bytes.Buffer) {
 func (bp *BufferPool) Put(b *bytes.Buffer) {
 	b.Reset()
 	select {
-	case bp.c <- b:
+	case bp.buffer <- b:
 	default: 
 	}
 }
